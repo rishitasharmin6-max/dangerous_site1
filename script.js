@@ -376,112 +376,79 @@ let audioContext = null;
 
 
 function playBirthdayMusic() {
-
     try {
-
         if (!audioContext) {
-
-            audioContext =
-                new (
-                    window.AudioContext ||
-                    window.webkitAudioContext
-                )();
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
         }
 
-
         if (audioContext.state === "suspended") {
-
             audioContext.resume();
         }
 
-
         const notes = [
-            523.25,
-            523.25,
-            587.33,
-            523.25,
-            698.46,
-            659.25,
+            // Happy Birthday style melody
+            { n: 523.25, d: 0.28 }, // C
+            { n: 523.25, d: 0.28 }, // C
+            { n: 587.33, d: 0.50 }, // D
+            { n: 523.25, d: 0.50 }, // C
+            { n: 698.46, d: 0.50 }, // F
+            { n: 659.25, d: 0.90 }, // E
 
-            523.25,
-            523.25,
-            587.33,
-            523.25,
-            783.99,
-            698.46
+            { n: 523.25, d: 0.28 },
+            { n: 523.25, d: 0.28 },
+            { n: 587.33, d: 0.50 },
+            { n: 523.25, d: 0.50 },
+            { n: 783.99, d: 0.50 }, // G
+            { n: 698.46, d: 0.90 }, // F
+
+            { n: 523.25, d: 0.28 },
+            { n: 523.25, d: 0.28 },
+            { n: 1046.50, d: 0.50 }, // High C
+            { n: 880.00, d: 0.50 },   // A
+            { n: 698.46, d: 0.50 },
+            { n: 659.25, d: 0.50 },
+            { n: 587.33, d: 0.90 },
+
+            { n: 932.33, d: 0.28 }, // Bb
+            { n: 932.33, d: 0.28 },
+            { n: 880.00, d: 0.50 },
+            { n: 698.46, d: 0.50 },
+            { n: 783.99, d: 0.50 },
+            { n: 698.46, d: 1.00 }
         ];
 
+        let time = audioContext.currentTime + 0.05;
 
-        const startTime =
-            audioContext.currentTime;
+        notes.forEach(note => {
+            const oscillator = audioContext.createOscillator();
+            const gain = audioContext.createGain();
 
+            oscillator.type = "triangle";
+            oscillator.frequency.setValueAtTime(note.n, time);
 
-        notes.forEach((frequency, index) => {
-
-            const oscillator =
-                audioContext.createOscillator();
-
-            const gain =
-                audioContext.createGain();
-
-
-            oscillator.type = "sine";
-
-            oscillator.frequency.value =
-                frequency;
-
-
-            const noteStart =
-                startTime + index * 0.28;
-
-            const noteEnd =
-                noteStart + 0.22;
-
-
-            gain.gain.setValueAtTime(
-                0,
-                noteStart
+            gain.gain.setValueAtTime(0, time);
+            gain.gain.linearRampToValueAtTime(0.18, time + 0.04);
+            gain.gain.setValueAtTime(0.18, time + note.d * 0.65);
+            gain.gain.exponentialRampToValueAtTime(
+                0.001,
+                time + note.d
             );
-
-
-            gain.gain.linearRampToValueAtTime(
-                0.12,
-                noteStart + 0.03
-            );
-
-
-            gain.gain.linearRampToValueAtTime(
-                0,
-                noteEnd
-            );
-
 
             oscillator.connect(gain);
+            gain.connect(audioContext.destination);
 
-            gain.connect(
-                audioContext.destination
-            );
+            oscillator.start(time);
+            oscillator.stop(time + note.d);
 
-
-            oscillator.start(noteStart);
-
-            oscillator.stop(noteEnd);
+            time += note.d + 0.04;
         });
 
-
-        soundButton.textContent =
-            "🔊 Birthday music playing! 🎶";
-
+        soundButton.textContent = "🔊 Birthday music playing! 🎶";
 
     } catch (error) {
-
-        console.log(
-            "Audio could not start:",
-            error
-        );
+        console.log("Audio could not start:", error);
     }
 }
-
 
 /* =========================================
    TRY AUTOMATIC MUSIC
